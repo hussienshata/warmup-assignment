@@ -1,13 +1,52 @@
 const fs = require("fs");
 
+
 // ============================================================
 // Function 1: getShiftDuration(startTime, endTime)
 // startTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
 // endTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
 // Returns: string formatted as h:mm:ss
 // ============================================================
+
+function toSeconds(time){
+    let x = time.split(":");
+    let hour = Number(x[0]);
+    let mins = Number(x[1]);
+    let third = x[2];
+
+    let y = third.split(" ");
+    let seconds = Number(y[0]);
+    let period = y[1];
+
+    if (period === "pm" && hour !== 12){
+        hour += 12;
+    } 
+
+    if (period === "am" && hour === 12){
+        hour = 0;
+    }
+
+    return (hour * 3600) + (mins * 60) + (seconds);
+}
+
 function getShiftDuration(startTime, endTime) {
     // TODO: Implement this function
+    let final = toSeconds(endTime) - toSeconds(startTime);
+    let finalhours = Math.floor(final / 3600);
+    let remaining = final % 3600;
+    let finalmins = Math.floor(remaining / 60);
+    let finalsecs = remaining % 60;
+
+    if (finalmins < 10) {
+    finalmins = "0" + finalmins;
+    }
+
+    if (finalsecs < 10) {
+    finalsecs = "0" + finalsecs;
+    }
+    
+    let str = finalhours + ":" + finalmins + ":" + finalsecs;
+    return str;
 }
 
 // ============================================================
@@ -18,6 +57,33 @@ function getShiftDuration(startTime, endTime) {
 // ============================================================
 function getIdleTime(startTime, endTime) {
     // TODO: Implement this function
+    let startseconds = toSeconds(startTime); 
+    let endseconds = toSeconds(endTime); 
+    let x = 0;
+
+    if(startseconds < 28800){ 
+        x = x + (28800 - startseconds); 
+    }
+
+    if(endseconds > 79200){ 
+        x = x + (endseconds - 79200); 
+    } 
+
+    let finalhours = Math.floor(x / 3600); 
+    let remaining = x % 3600; 
+    let finalmins = Math.floor(remaining / 60); 
+    let finalsecs = remaining % 60; 
+
+    if (finalmins < 10) { 
+        finalmins = "0" + finalmins; 
+    }
+
+    if (finalsecs < 10) { 
+        finalsecs = "0" + finalsecs; 
+    }
+
+    let str = finalhours + ":" + finalmins + ":" + finalsecs; 
+    return str;
 }
 
 // ============================================================
