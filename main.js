@@ -17,13 +17,16 @@ function toSeconds(time){
     let y = third.split(" ");
     let seconds = Number(y[0]);
     let period = y[1];
-
-    if (period === "pm" && hour !== 12){
+    
+    if(period){
+        
+        if (period === "pm" && hour !== 12){
         hour += 12;
-    } 
+        } 
 
-    if (period === "am" && hour === 12){
+        if (period === "am" && hour === 12){
         hour = 0;
+        }
     }
 
     return (hour * 3600) + (mins * 60) + (seconds);
@@ -94,6 +97,22 @@ function getIdleTime(startTime, endTime) {
 // ============================================================
 function getActiveTime(shiftDuration, idleTime) {
     // TODO: Implement this function
+    let x = toSeconds(shiftDuration) - toSeconds(idleTime);
+    let finalhours = Math.floor(x / 3600); 
+    let remaining = x % 3600; 
+    let finalmins = Math.floor(remaining / 60); 
+    let finalsecs = remaining % 60; 
+
+    if (finalmins < 10) { 
+        finalmins = "0" + finalmins; 
+    }
+
+    if (finalsecs < 10) { 
+        finalsecs = "0" + finalsecs; 
+    }
+
+    let str = finalhours + ":" + finalmins + ":" + finalsecs; 
+    return str;
 }
 
 // ============================================================
@@ -104,6 +123,23 @@ function getActiveTime(shiftDuration, idleTime) {
 // ============================================================
 function metQuota(date, activeTime) {
     // TODO: Implement this function
+    let array = date.split("-");
+    let year = array[0];
+    let month = Number(array[1]);
+    let day = Number(array[2]);
+    let seconds = toSeconds(activeTime);
+
+    if((month == 4) && (day >= 10 && day <= 30)){
+        if(seconds >= 21600){
+            return true;
+        }
+    }
+
+    if(seconds >= 30240){
+        return true;
+    }
+
+    return false;
 }
 
 // ============================================================
