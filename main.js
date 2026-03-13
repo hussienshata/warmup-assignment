@@ -35,6 +35,11 @@ function toSeconds(time){
 function getShiftDuration(startTime, endTime) {
     // TODO: Implement this function
     let final = toSeconds(endTime) - toSeconds(startTime);
+    
+    if (final < 0) { 
+        final += 86400; 
+    }
+
     let finalhours = Math.floor(final / 3600);
     let remaining = final % 3600;
     let finalmins = Math.floor(remaining / 60);
@@ -61,7 +66,11 @@ function getShiftDuration(startTime, endTime) {
 function getIdleTime(startTime, endTime) {
     // TODO: Implement this function
     let startseconds = toSeconds(startTime); 
-    let endseconds = toSeconds(endTime); 
+    let endseconds = toSeconds(endTime);
+    if (endseconds === 0){ 
+        endseconds = 86400; 
+    }
+
     let x = 0;
 
     if(startseconds < 28800){ 
@@ -98,6 +107,9 @@ function getIdleTime(startTime, endTime) {
 function getActiveTime(shiftDuration, idleTime) {
     // TODO: Implement this function
     let x = toSeconds(shiftDuration) - toSeconds(idleTime);
+    if(x < 0){
+        x = 0;
+    }
     let finalhours = Math.floor(x / 3600); 
     let remaining = x % 3600; 
     let finalmins = Math.floor(remaining / 60); 
@@ -183,10 +195,25 @@ function addShiftRecord(textFile, shiftObj) {
 
     let newLine = Object.values(newRecord).join(",");
 
+    let insertIndex = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+        let parts = lines[i].split(",");
+    
+        if (parts[0] === shiftObj.driverID) {
+            insertIndex = i;
+        }
+    }
+
+    if (insertIndex === -1) {
     lines.push(newLine);
+    } 
+
+    else {
+    lines.splice(insertIndex + 1, 0, newLine);
+    }
 
     fs.writeFileSync(textFile, lines.join("\n"));
-
     return newRecord;
 }
 
@@ -230,7 +257,7 @@ function countBonusPerMonth(textFile, driverID, month) {
 
     let data = fs.readFileSync(textFile, "utf8");
     
-    if (data === "") {
+    if (data.trim() === "") {
         return -1;
     }
 
@@ -343,7 +370,7 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, mont
        let id = parts[0]; 
        
        if(id === driverID){
-            dayOff = parts[2].trim();
+            dayOff = parts[1].trim();
             break;
         }
     
