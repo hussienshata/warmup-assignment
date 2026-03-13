@@ -409,15 +409,56 @@ function getNetPay(driverID, actualHours, requiredHours, rateFile) {
     // TODO: Implement this function
     const fs = require("fs");
 
-    let data = fs.readFileSync(textFile, "utf8");
-    let shiftLine = data.trim().split("\n");
-
     let data2 = fs.readFileSync(rateFile, "utf8");
     let rateLine = data2.trim().split("\n");
 
     let actualHoursSeconds = toSeconds(actualHours);
     let requiredHoursSeconds = toSeconds(requiredHours);
+
+    let tier = 0;
+    let basepay = 0
+
+    for(let i = 0; i < rateLine.length; i++){
+        let parts = rateLine[i].split(",");
+        let id = parts[0];
+        
+        if(id === driverID){
+            tier = Number(parts[3]);
+            basepay = Number(parts[2]);
+            break;
+        }
+    }
+
+    let allowedMissingSeconds = 0;
+
+    if(tier === 1){
+        allowedMissingSeconds = 50 * 3600;
+    }
+
+    else if(tier === 2){
+        allowedMissingSeconds = 20 * 3600;
+    }
+
+    else if(tier === 3){
+        allowedMissingSeconds = 10 * 3600;
+    }
     
+    else{
+        allowedMissingSeconds = 4 * 3600;
+    }
+
+    let seconds = actualHoursSeconds - requiredHoursSeconds + allowedMissingSeconds;
+    let netpay = 0;
+    if(seconds >= 0){
+        netpay = basepay;
+    }
+    else{
+        let missinghours = Math.floor(Math.abs(seconds) / 3600);
+        let deductionRatePerHour = basepay / 185;
+        let salaryDeduction = missinghours * deductionRatePerHour;
+        netpay = basepay - salaryDeduction;
+    }
+    return Math.round(netpay);
 }
 
 module.exports = {
